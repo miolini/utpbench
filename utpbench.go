@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"sync"
@@ -91,15 +92,9 @@ func readConn(conn net.Conn) {
 	defer conn.Close()
 	defer log.Printf("client %s disconnected", conn.RemoteAddr().String())
 	log.Printf("client %s connected", conn.RemoteAddr().String())
-	buf := make([]byte, 4096)
-	for {
-		_, err := conn.Read(buf)
-		if err != nil {
-			if err != io.EOF {
-				log.Printf("err: %s", err)
-			}
-			break
-		}
+	_, err := io.Copy(ioutil.Discard, conn)
+	if err != io.EOF {
+		log.Printf("client %s error: %s", conn.RemoteAddr().String(), err)
 	}
 }
 
