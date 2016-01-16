@@ -14,13 +14,14 @@ import (
 )
 
 var (
-	flClientMode = flag.Bool("c", false, "client mode")
-	flServerMode = flag.Bool("s", false, "server mode")
-	flHost       = flag.String("h", "127.0.0.1", "host")
-	flPort       = flag.Int("p", 6001, "port")
-	flLen        = flag.Int("l", 1400, "length of data")
-	flThreads    = flag.Int("t", 1, "threads")
-	flDuration   = flag.Duration("d", time.Second*10, "duration")
+	flClientMode   = flag.Bool("c", false, "client mode")
+	flServerMode   = flag.Bool("s", false, "server mode")
+	flHost         = flag.String("h", "127.0.0.1", "host")
+	flPort         = flag.Int("p", 6001, "port")
+	flLen          = flag.Int("l", 1400, "length of data")
+	flThreads      = flag.Int("t", 1, "threads")
+	flDuration     = flag.Duration("d", time.Second*10, "duration")
+	flDurationStat = flag.Duration("ds", time.Second*5, "duration for stats")
 )
 
 func main() {
@@ -39,7 +40,7 @@ func main() {
 	if *flClientMode {
 		wg.Add(*flThreads)
 		chStat := make(chan int, 100)
-		go stat(chStat)
+		go stat(chStat, *flDurationStat)
 		for i := 0; i < *flThreads; i++ {
 			go client(&wg, *flHost, *flPort, *flLen, *flDuration, chStat)
 		}
@@ -48,7 +49,7 @@ func main() {
 	log.Printf("time takes %.2fsec", time.Since(ts).Seconds())
 }
 
-func stat(chStat chan int) {
+func stat(chStat chan int, duration time.Duration) {
 	t := time.NewTicker(time.Second)
 	counter := 0
 	for {
@@ -56,7 +57,7 @@ func stat(chStat chan int) {
 		case n := <-chStat:
 			counter += n
 		case <-t.C:
-			log.Printf("speed %.3f mbit/sec", float64(counter*8)/1024/1024)
+			log.Printf("speed %.3f mbit/sec", float64(counter*8)/duration.Seconds()/1024/1024)
 			counter = 0
 		}
 	}
