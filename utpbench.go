@@ -26,19 +26,40 @@ var (
 func main() {
 	log.Printf("UTP Benchmark Tool by Artem Andreenko (miolini@gmail.com)")
 	flag.Parse()
+	if !*flClientMode && !*flServerMode {
+		flag.PrintDefaults()
+		return
+	}
 	ts := time.Now()
 	wg := sync.WaitGroup{}
 	if *flServerMode {
 		wg.Add(1)
 		go server(&wg, *flHost, *flPort)
-	} else {
+	}
+	if *flClientMode {
 		wg.Add(*flThreads)
+		chStat := make(chan int, 100)
+		go stat(chStat)
 		for i := 0; i < *flThreads; i++ {
-			go client(&wg, *flHost, *flPort, *flLen, *flDuration)
+			go client(&wg, *flHost, *flPort, *flLen, *flDuration, chStat)
 		}
 	}
 	wg.Wait()
 	log.Printf("time takes %.2fsec", time.Since(ts).Seconds())
+}
+
+func stat(chStat chan int) {
+	t := time.NewTicker(time.Second)
+	counter := 0
+	for {
+		select {
+		case n := <-chStat:
+			counter += n
+		case <-t.C:
+			log.Printf("speed %.3f mbit/sec", float64(counter * 8) / 1024 / 1024)
+			counter = 0
+		}
+	}
 }
 
 func server(wg *sync.WaitGroup, host string, port int) {
@@ -80,7 +101,7 @@ func readConn(conn net.Conn) {
 	}
 }
 
-func client(wg *sync.WaitGroup, host string, port, len int, duration time.Duration) {
+func client(wg *sync.WaitGroup, host string, port, len int, duration time.Duration, chStat chan int) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("error: %s", r)
@@ -97,15 +118,7 @@ func client(wg *sync.WaitGroup, host string, port, len int, duration time.Durati
 	log.Printf("connected")
 	buf := bytes.Repeat([]byte("H"), len)
 	ts := time.Now()
-	te := ts
-	count := 0
 	for time.Since(ts) < duration {
-		since := time.Since(te)
-		if since >= time.Second {
-			te = time.Now()
-			log.Printf("speed %.4f mbit/sec", float64(count)*8/since.Seconds()/1024/1024)
-			count = 0
-		}
 		n, err := conn.Write(buf)
 		if err != nil {
 			if err == io.EOF {
@@ -113,6 +126,6 @@ func client(wg *sync.WaitGroup, host string, port, len int, duration time.Durati
 			}
 			panic(err)
 		}
-		count += n
+		chStat <- n
 	}
 }
