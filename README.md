@@ -1,6 +1,8 @@
 # utpbench
 UTP protocol network benchmark in Go
 
+[![Build Status](https://travis-ci.org/miolini/utpbench.svg)](https://travis-ci.org/miolini/utpbench.svg) [![Go Report Card](http://goreportcard.com/badge/miolini/utpbench)](http://goreportcard.com/report/miolini/utpbench)
+
 ## Usage
 
 ```bash
