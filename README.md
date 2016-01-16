@@ -19,7 +19,8 @@ $ utpbench
     	port (default 6001)
   -s	server mode
   -t int
-    	threads (default 1)```
+    	threads (default 1)
+```
     	
 ## Server run
 
