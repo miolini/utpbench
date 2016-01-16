@@ -50,7 +50,8 @@ func main() {
 }
 
 func stat(chStat chan int, duration time.Duration) {
-	t := time.NewTicker(time.Second)
+	t := time.NewTicker(duration)
+	defer t.Stop()
 	counter := 0
 	for {
 		select {
