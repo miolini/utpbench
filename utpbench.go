@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	flClientMode = flag.Bool("c", true, "client mode")
+	flClientMode = flag.Bool("c", false, "client mode")
 	flServerMode = flag.Bool("s", false, "server mode")
 	flHost       = flag.String("h", "127.0.0.1", "host")
 	flPort       = flag.Int("p", 6001, "port")
