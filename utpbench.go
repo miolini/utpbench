@@ -56,7 +56,7 @@ func stat(chStat chan int) {
 		case n := <-chStat:
 			counter += n
 		case <-t.C:
-			log.Printf("speed %.3f mbit/sec", float64(counter * 8) / 1024 / 1024)
+			log.Printf("speed %.3f mbit/sec", float64(counter*8)/1024/1024)
 			counter = 0
 		}
 	}
@@ -87,8 +87,8 @@ func server(wg *sync.WaitGroup, host string, port int) {
 
 func readConn(conn net.Conn) {
 	defer conn.Close()
-	defer log.Printf("client disconnected")
-	log.Printf("new connection")
+	defer log.Printf("client %s disconnected", conn.RemoteAddr().String())
+	log.Printf("client %s connected", conn.RemoteAddr().String())
 	buf := make([]byte, 4096)
 	for {
 		_, err := conn.Read(buf)
