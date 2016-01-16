@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
 	"flag"
+	"fmt"
 	"io"
-	"sync"
-	"time"
 	"log"
 	"net"
-	"bytes"
+	"sync"
+	"time"
 
 	"github.com/anacrolix/utp"
 )
@@ -16,11 +16,11 @@ import (
 var (
 	flClientMode = flag.Bool("c", true, "client mode")
 	flServerMode = flag.Bool("s", false, "server mode")
-	flHost = flag.String("h", "127.0.0.1", "host")
-	flPort = flag.Int("p", 6001, "port")
-	flLen = flag.Int("l", 1400, "length of data")
-	flThreads = flag.Int("t", 1, "threads")
-	flDuration = flag.Duration("d", time.Second * 10, "duration")
+	flHost       = flag.String("h", "127.0.0.1", "host")
+	flPort       = flag.Int("p", 6001, "port")
+	flLen        = flag.Int("l", 1400, "length of data")
+	flThreads    = flag.Int("t", 1, "threads")
+	flDuration   = flag.Duration("d", time.Second*10, "duration")
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 		go server(&wg, *flHost, *flPort)
 	} else {
 		wg.Add(*flThreads)
-		for i:=0;i<*flThreads;i++ {
+		for i := 0; i < *flThreads; i++ {
 			go client(&wg, *flHost, *flPort, *flLen, *flDuration)
 		}
 	}
@@ -103,7 +103,7 @@ func client(wg *sync.WaitGroup, host string, port, len int, duration time.Durati
 		since := time.Since(te)
 		if since >= time.Second {
 			te = time.Now()
-			log.Printf("speed %.4f mbit/sec", float64(count) * 8 / since.Seconds() / 1024 / 1024)
+			log.Printf("speed %.4f mbit/sec", float64(count)*8/since.Seconds()/1024/1024)
 			count = 0
 		}
 		n, err := conn.Write(buf)
